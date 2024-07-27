@@ -1,0 +1,36 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_IMAGE: "<your-account-id>.dkr.ecr.us-west-1.amazonaws.com/my-flask-app"
+  CLUSTER_NAME: "my-eks-cluster"
+  REGION: "us-west-1"
+  HELM_RELEASE_NAME: "flask-app"
+  HELM_CHART_PATH: "./helm/flask-app"
+
+before_script:
+  - apk add --no-cache curl jq python3 py3-pip
+  - pip3 install awscli
+
+# Build the Docker image
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE:$CI_COMMIT_SHA .
+    - docker push $DOCKER_IMAGE:$CI_COMMIT_SHA
+
+# Deploy the application using Helm
+deploy:
+  stage: deploy
+  image: alpine/helm:3.5.4
+  script:
+    - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+    - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    - export AWS_DEFAULT_REGION=$REGION
+    - aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
+    - helm upgrade --install $HELM_RELEASE_NAME $HELM_CHART_PATH --set image.repository=$DOCKER_IMAGE --set image.tag=$CI_COMMIT_SHA
