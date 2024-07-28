@@ -19,12 +19,11 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-# Sample data (this can be replaced with actual database entries)
+# Sample data
 if session.query(Restaurant).count() == 0:
     sample_data = [
-        Restaurant(name="Veggie Delight", address="123 Green St", style="Italian", vegetarian=True, opening_hour=time(9, 0), closing_hour=time(21, 0), deliveries=True),
-        Restaurant(name="French Gourmet", address="456 Fancy Ave", style="French", vegetarian=False, opening_hour=time(11, 0), closing_hour=time(23, 0), deliveries=False),
-        # Add more sample restaurants here
+        Restaurant(name="Veggie Delight", address="1", style="Italian", vegetarian=True, opening_hour=time(9, 0), closing_hour=time(21, 0), deliveries=True),
+        Restaurant(name="French Gourmet", address="2", style="French", vegetarian=False, opening_hour=time(11, 0), closing_hour=time(23, 0), deliveries=False),
     ]
     session.add_all(sample_data)
     session.commit()
